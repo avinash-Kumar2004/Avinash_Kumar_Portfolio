@@ -4,16 +4,11 @@ import cors           from "cors";
 import helmet         from "helmet";
 import dotenv         from "dotenv";
 import rateLimit      from "express-rate-limit";
-import path           from "path";
-import { fileURLToPath } from "url";
 import subscribeRoute from "./routes/subscribe.js";
 import contactRoute   from "./routes/contact.js";
-import mongoose from "mongoose";
+import mongoose       from "mongoose";
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
 
 /* ── Validate required env vars on startup ── */
 const REQUIRED_ENV = ["SMTP_HOST","SMTP_PORT","SMTP_USER","SMTP_PASS","FROM_NAME","FROM_EMAIL","MONGO_URI"];
@@ -23,33 +18,36 @@ REQUIRED_ENV.forEach(key => {
     process.exit(1);
   }
 });
+
+/* ── MongoDB Connect ── */
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
-const app  = express();
-const PORT = process.env.PORT || 3000;
+
+const app    = express();
+const PORT   = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === "production";
+
+/* ── Trust Proxy (Render ke liye zaroori) ── */
+app.set("trust proxy", 1);
 
 /* ══════════════════════════════════════
    SECURITY MIDDLEWARE
 ══════════════════════════════════════ */
 
-/* 1. Helmet — secure HTTP headers */
+/* 1. Helmet */
 app.use(helmet({
-  contentSecurityPolicy: false, // React app ke liye disable
-  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy:      false,
+  crossOriginEmbedderPolicy:  false,
 }));
 
-/* 2. CORS
-   - Production: sirf tumhara domain
-   - Development: localhost bhi allow
-══════════════════════════════════════ */
+/* 2. CORS */
 const allowedOrigins = isProd
   ? [
       "https://avinashkumar.dev",
       "https://www.avinashkumar.dev",
-     "https://avinash-kumar-portfolio-zts1.vercel.app",  // ← add karo
-
+      "https://avinash-kumar-portfolio-zts1.vercel.app",
+      "https://avinash-kumar-portfolio.vercel.app",
     ]
   : [
       "http://localhost:5173",
@@ -59,23 +57,28 @@ const allowedOrigins = isProd
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    console.error("❌ CORS blocked:", origin);
     cb(new Error("Not allowed by CORS"));
   },
-  methods: ["GET", "POST"],
+  methods:      ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
+  credentials:  false,
 }));
 
-/* 3. Body parser with size limit */
+/* OPTIONS preflight handle karo */
+app.options("*", cors());
+
+/* 3. Body parser */
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 /* 4. Global rate limit */
 app.use(rateLimit({
-  windowMs:  15 * 60 * 1000,
-  max:       100,
+  windowMs:        15 * 60 * 1000,
+  max:             100,
   standardHeaders: true,
   legacyHeaders:   false,
-  message: { message: "Too many requests. Try again later." },
+  message:         { message: "Too many requests. Try again later." },
 }));
 
 /* 5. Remove X-Powered-By */
@@ -96,6 +99,9 @@ app.get("/health", (_req, res) => {
   });
 });
 
+/* ══════════════════════════════════════
+   ERROR HANDLERS
+══════════════════════════════════════ */
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found." });
 });
