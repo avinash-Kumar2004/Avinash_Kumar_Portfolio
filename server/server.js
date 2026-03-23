@@ -94,27 +94,6 @@ app.get("/health", (_req, res) => {
   });
 });
 
-/* ══════════════════════════════════════
-   PRODUCTION — Serve React Build
-   React ka build folder serve karega
-   Ye sirf production mein kaam karega
-══════════════════════════════════════ */
-// if (isProd) {
-//   // React build folder path — adjust if needed
-//   const buildPath = path.join(__dirname, "../dist");
-
-//   // Serve static files (JS, CSS, images)
-//   app.use(express.static(buildPath));
-
-//   // All non-API routes → React app (SPA routing)
-//   app.get("*", (_req, res) => {
-//     res.sendFile(path.join(buildPath, "index.html"));
-//   });
-// }
-
-/* ══════════════════════════════════════
-   ERROR HANDLERS
-══════════════════════════════════════ */
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found." });
 });
