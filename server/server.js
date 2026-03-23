@@ -48,6 +48,8 @@ const allowedOrigins = isProd
   ? [
       "https://avinashkumar.dev",
       "https://www.avinashkumar.dev",
+      "https://avinash-kumar-portfolio.vercel.app",  // ← add karo
+
     ]
   : [
       "http://localhost:5173",
