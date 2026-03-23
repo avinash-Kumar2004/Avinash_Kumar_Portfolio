@@ -1,8 +1,8 @@
-import express      from "express";
-import SibApiV3Sdk from "@getbrevo/brevo";
-import rateLimit    from "express-rate-limit";
+import express          from "express";
+import * as SibApiV3Sdk from "@getbrevo/brevo";
+import rateLimit        from "express-rate-limit";
 import { body, validationResult } from "express-validator";
-import Contact      from "../models/Contact.js";
+import Contact          from "../models/Contact.js";
 
 const router = express.Router();
 
@@ -40,12 +40,12 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
   try {
 
     /* ══ Email 1 — TO YOU ══ */
-const email1 = new SibApiV3Sdk.SendSmtpEmail();
-    email1.subject     = `📩 New Contact: ${subject}`;
-    email1.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
-    email1.to          = [{ email: process.env.FROM_EMAIL }];
-    email1.replyTo     = { email: email, name: name };
-    email1.htmlContent = `
+    const notifEmail = new SibApiV3Sdk.SendSmtpEmail();
+    notifEmail.subject     = `📩 New Contact: ${subject}`;
+    notifEmail.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
+    notifEmail.to          = [{ email: process.env.FROM_EMAIL }];
+    notifEmail.replyTo     = { email: email, name: name };
+    notifEmail.htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
         <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
@@ -95,14 +95,14 @@ const email1 = new SibApiV3Sdk.SendSmtpEmail();
         </body>
       </html>
     `;
-    await apiInstance.sendTransacEmail(email1);
+    await apiInstance.sendTransacEmail(notifEmail);
 
     /* ══ Email 2 — TO SENDER ══ */
-    const email2 = new Brevo.SendSmtpEmail();
-    email2.subject     = `✅ Message received — Avinash Kumar`;
-    email2.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
-    email2.to          = [{ email: email }];
-    email2.htmlContent = `
+    const confirmEmail = new SibApiV3Sdk.SendSmtpEmail();
+    confirmEmail.subject     = `✅ Message received — Avinash Kumar`;
+    confirmEmail.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
+    confirmEmail.to          = [{ email: email }];
+    confirmEmail.htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
         <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
@@ -145,7 +145,7 @@ const email1 = new SibApiV3Sdk.SendSmtpEmail();
         </body>
       </html>
     `;
-    await apiInstance.sendTransacEmail(email2);
+    await apiInstance.sendTransacEmail(confirmEmail);
 
     await Contact.create({ name, email, subject, message });
     return res.status(200).json({ message: "Message sent successfully!" });
@@ -157,5 +157,3 @@ const email1 = new SibApiV3Sdk.SendSmtpEmail();
 });
 
 export default router;
-
-

@@ -1,11 +1,12 @@
-import express      from "express";
-import SibApiV3Sdk from "@getbrevo/brevo";
-import rateLimit    from "express-rate-limit";
+import express          from "express";
+import * as SibApiV3Sdk from "@getbrevo/brevo";
+import rateLimit        from "express-rate-limit";
 import { body, validationResult } from "express-validator";
-import validator    from "validator";
-import Subscriber   from "../models/Subscriber.js";
+import validator        from "validator";
+import Subscriber       from "../models/Subscriber.js";
 
 const router = express.Router();
+
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 apiInstance.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
@@ -54,11 +55,11 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
     const FRONTEND = "https://avinash-kumar-portfolio-zts1.vercel.app";
 
     /* ══ Email 1 — Notification to YOU ══ */
-const email1 = new SibApiV3Sdk.SendSmtpEmail();
-    email1.subject     = "🎉 New Blog Subscriber — Portfolio";
-    email1.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
-    email1.to          = [{ email: process.env.FROM_EMAIL }];
-    email1.htmlContent = `
+    const notifEmail = new SibApiV3Sdk.SendSmtpEmail();
+    notifEmail.subject     = "🎉 New Blog Subscriber — Portfolio";
+    notifEmail.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
+    notifEmail.to          = [{ email: process.env.FROM_EMAIL }];
+    notifEmail.htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
         <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
@@ -81,14 +82,14 @@ const email1 = new SibApiV3Sdk.SendSmtpEmail();
         </body>
       </html>
     `;
-    await apiInstance.sendTransacEmail(email1);
+    await apiInstance.sendTransacEmail(notifEmail);
 
     /* ══ Email 2 — Confirmation to SUBSCRIBER ══ */
-    const email2 = new Brevo.SendSmtpEmail();
-    email2.subject     = "✅ You're subscribed to Avinash Kumar's Blog!";
-    email2.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
-    email2.to          = [{ email: email }];
-    email2.htmlContent = `
+    const confirmEmail = new SibApiV3Sdk.SendSmtpEmail();
+    confirmEmail.subject     = "✅ You're subscribed to Avinash Kumar's Blog!";
+    confirmEmail.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
+    confirmEmail.to          = [{ email: email }];
+    confirmEmail.htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
         <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
@@ -132,7 +133,7 @@ const email1 = new SibApiV3Sdk.SendSmtpEmail();
         </body>
       </html>
     `;
-    await apiInstance.sendTransacEmail(email2);
+    await apiInstance.sendTransacEmail(confirmEmail);
 
     await Subscriber.create({ email });
     return res.status(200).json({ message: "Subscribed successfully!" });
