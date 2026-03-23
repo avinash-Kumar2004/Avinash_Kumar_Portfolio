@@ -11,10 +11,10 @@ import mongoose       from "mongoose";
 dotenv.config();
 
 /* ── Validate required env vars on startup ── */
-const REQUIRED_ENV = ["MONGO_URI", "SMTP_USER", "SMTP_PASS", "FROM_EMAIL", "FROM_NAME"];
+const REQUIRED_ENV = ["MONGO_URI", "SMTP_USER", "SMTP_PASS", "FROM_EMAIL", "FROM_NAME", "FRONTEND_URL"];
 REQUIRED_ENV.forEach(key => { 
   if (!process.env[key]) {
-    console.error(`❌ Missing env variable: ${key}`);
+    console.error(`Missing env variable: ${key}`);
     process.exit(1);
   }
 });
@@ -22,7 +22,7 @@ REQUIRED_ENV.forEach(key => {
 /* ── MongoDB Connect ── */
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => { console.error("❌ MongoDB Error:", err); process.exit(1); });
+  .catch(err => { console.error("MongoDB Error:", err); process.exit(1); });
 
 const app    = express();
 const PORT   = process.env.PORT || 3000;
