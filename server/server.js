@@ -12,7 +12,7 @@ dotenv.config();
 
 /* ── Validate required env vars on startup ── */
 const REQUIRED_ENV = ["MONGO_URI", "SMTP_USER", "SMTP_PASS", "FROM_EMAIL", "FROM_NAME"];
-REQUIRED_ENV.forEach(key => {
+REQUIRED_ENV.forEach(key => { 
   if (!process.env[key]) {
     console.error(`❌ Missing env variable: ${key}`);
     process.exit(1);
