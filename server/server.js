@@ -99,18 +99,18 @@ app.get("/health", (_req, res) => {
    React ka build folder serve karega
    Ye sirf production mein kaam karega
 ══════════════════════════════════════ */
-if (isProd) {
-  // React build folder path — adjust if needed
-  const buildPath = path.join(__dirname, "../dist");
+// if (isProd) {
+//   // React build folder path — adjust if needed
+//   const buildPath = path.join(__dirname, "../dist");
 
-  // Serve static files (JS, CSS, images)
-  app.use(express.static(buildPath));
+//   // Serve static files (JS, CSS, images)
+//   app.use(express.static(buildPath));
 
-  // All non-API routes → React app (SPA routing)
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-  });
-}
+//   // All non-API routes → React app (SPA routing)
+//   app.get("*", (_req, res) => {
+//     res.sendFile(path.join(buildPath, "index.html"));
+//   });
+// }
 
 /* ══════════════════════════════════════
    ERROR HANDLERS
