@@ -165,7 +165,7 @@ router.post(
                     ).join("")}
                   </div>
                   <div style="text-align:center;margin-bottom:8px;">
-                    <a href="${process.env.FRONTEND_URL || "https://avinashkumar.dev"}/blog"
+                    <a href="${process.env.FRONTEND_URL || "https://avinash-kumar-portfolio-zts1.vercel.app/blog"}/blog"
                        style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
                       Read Latest Articles →
                     </a>

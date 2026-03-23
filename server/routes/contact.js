@@ -149,7 +149,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
                   <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">${message.length > 200 ? message.substring(0, 200) + "..." : message}</p>
                 </div>
                 <div style="text-align:center;">
-                  <a href="${process.env.FRONTEND_URL || "https://avinashkumar.dev"}/projects"
+                  <a href="${process.env.FRONTEND_URL || "https://avinash-kumar-portfolio-zts1.vercel.app/blog"}/projects"
                      style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
                     View My Projects →
                   </a>
