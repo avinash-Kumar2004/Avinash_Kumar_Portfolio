@@ -11,7 +11,7 @@ import mongoose       from "mongoose";
 dotenv.config();
 
 /* ── Validate required env vars on startup ── */
-const REQUIRED_ENV = ["MONGO_URI", "RESEND_API_KEY", "SMTP_USER"];
+const REQUIRED_ENV = ["MONGO_URI", "BREVO_API_KEY", "FROM_EMAIL", "FROM_NAME"];
 REQUIRED_ENV.forEach(key => {
   if (!process.env[key]) {
     console.error(`❌ Missing env variable: ${key}`);
@@ -112,5 +112,5 @@ app.use((err, _req, res, _next) => {
 app.listen(PORT, () => {
   console.log(`✅ Server: http://localhost:${PORT}`);
   console.log(`🌍 Mode:   ${process.env.NODE_ENV || "development"}`);
-  console.log(`📧 SMTP:   ${process.env.SMTP_USER}`);
+  console.log(`📧 From:   ${process.env.FROM_EMAIL}`);
 });
