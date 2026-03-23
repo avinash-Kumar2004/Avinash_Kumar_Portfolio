@@ -48,7 +48,7 @@ const allowedOrigins = isProd
   ? [
       "https://avinashkumar.dev",
       "https://www.avinashkumar.dev",
-      "https://avinash-kumar-portfolio.vercel.app",  // ← add karo
+     "https://avinash-kumar-portfolio-zts1.vercel.app",  // ← add karo
 
     ]
   : [
