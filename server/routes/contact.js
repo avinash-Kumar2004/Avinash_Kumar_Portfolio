@@ -1,12 +1,12 @@
 import express      from "express";
-import * as Brevo   from "@getbrevo/brevo";
+import SibApiV3Sdk from "@getbrevo/brevo";
 import rateLimit    from "express-rate-limit";
 import { body, validationResult } from "express-validator";
 import Contact      from "../models/Contact.js";
 
 const router = express.Router();
 
-const apiInstance = new Brevo.TransactionalEmailsApi();
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 apiInstance.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
 const contactLimiter = rateLimit({
@@ -40,7 +40,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
   try {
 
     /* ══ Email 1 — TO YOU ══ */
-    const email1 = new Brevo.SendSmtpEmail();
+const email1 = new SibApiV3Sdk.SendSmtpEmail();
     email1.subject     = `📩 New Contact: ${subject}`;
     email1.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
     email1.to          = [{ email: process.env.FROM_EMAIL }];
