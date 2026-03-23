@@ -1,7 +1,8 @@
-import express   from "express";
+import express from "express";
 import rateLimit from "express-rate-limit";
 import { body, validationResult } from "express-validator";
-import Contact   from "../models/Contact.js";
+import Contact from "../models/Contact.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 const router = express.Router();
 
@@ -20,28 +21,6 @@ const validateContact = [
   body("message").trim().notEmpty().withMessage("Message is required.").isLength({ min: 10, max: 2000 }).withMessage("Message must be 10-2000 chars."),
 ];
 
-const sendEmail = async ({ to, subject, html, replyTo }) => {
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": process.env.BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender:      { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL },
-      to:          [{ email: to }],
-      subject,
-      htmlContent: html,
-      ...(replyTo && { replyTo: { email: replyTo } }),
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Brevo error: ${err}`);
-  }
-  return res.json();
-};
-
 router.post("/contact", contactLimiter, validateContact, async (req, res) => {
 
   const errors = validationResult(req);
@@ -50,16 +29,18 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
   }
 
   const { name, email, subject, message } = req.body;
-  const FRONTEND = "https://avinash-kumar-portfolio-zts1.vercel.app";
+  const FRONTEND = process.env.FRONTEND_URL;
   const timestamp = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata", dateStyle: "full", timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+    dateStyle: "full",
+    timeStyle: "short",
   });
 
   try {
 
-    /* ══ Email 1 — TO YOU ══ */
+    // Email 1 — Tujhe contact notification
     await sendEmail({
-      to:      process.env.FROM_EMAIL,
+      to: process.env.FROM_EMAIL,
       subject: `📩 New Contact: ${subject}`,
       replyTo: email,
       html: `
@@ -114,9 +95,9 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
       `,
     });
 
-    /* ══ Email 2 — TO SENDER ══ */
+    // Email 2 — Sender ko confirmation
     await sendEmail({
-      to:      email,
+      to: email,
       subject: `✅ Message received — Avinash Kumar`,
       html: `
         <!DOCTYPE html>
