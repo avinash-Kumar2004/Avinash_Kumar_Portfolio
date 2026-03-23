@@ -1,12 +1,11 @@
-import express   from "express";
-import { Resend } from "resend";
-import rateLimit from "express-rate-limit";
+import express    from "express";
+import nodemailer from "nodemailer";
+import rateLimit  from "express-rate-limit";
 import { body, validationResult } from "express-validator";
-import validator from "validator";
+import validator  from "validator";
 import Subscriber from "../models/Subscriber.js";
 
 const router = express.Router();
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const subscribeLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -24,6 +23,22 @@ const validateSubscribe = [
     .normalizeEmail()
     .isLength({ max: 254 }).withMessage("Email too long."),
 ];
+
+let transporter = null;
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host:   process.env.SMTP_HOST,
+      port:   Number(process.env.SMTP_PORT),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+  return transporter;
+};
 
 router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) => {
 
@@ -44,20 +59,19 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
   }
 
   try {
+    const mailer = getTransporter();
     const timestamp = new Date().toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
       dateStyle: "full",
       timeStyle: "short",
     });
-
     const totalCount = await Subscriber.countDocuments();
-
     const FRONTEND = "https://avinash-kumar-portfolio-zts1.vercel.app";
 
     /* ══ Email 1 — Notification to YOU ══ */
-    await resend.emails.send({
-      from:    "Avinash Kumar Portfolio <onboarding@resend.dev>",
-      to:      "www.kumaravinash3898@gmail.com",
+    await mailer.sendMail({
+      from:    `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
+      to:      process.env.FROM_EMAIL,
       subject: "🎉 New Blog Subscriber — Portfolio",
       html: `
         <!DOCTYPE html>
@@ -75,9 +89,7 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
                   <p style="margin:0;font-size:16px;font-weight:700;color:#0f172a;">📧 ${email}</p>
                 </div>
                 <p style="margin:0;color:#94a3b8;font-size:13px;">🕐 ${timestamp} IST</p>
-                <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;">
-                  Total subscribers: ${totalCount + 1}
-                </p>
+                <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;">Total subscribers: ${totalCount + 1}</p>
               </div>
               <div style="background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
                 <p style="margin:0;color:#94a3b8;font-size:12px;">Portfolio — avinashkumar.dev</p>
@@ -89,8 +101,8 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
     });
 
     /* ══ Email 2 — Confirmation to SUBSCRIBER ══ */
-    await resend.emails.send({
-      from:    "Avinash Kumar <onboarding@resend.dev>",
+    await mailer.sendMail({
+      from:    `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
       to:      email,
       subject: "✅ You're subscribed to Avinash Kumar's Blog!",
       html: `
@@ -120,12 +132,23 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
                     `<span style="background:#eff6ff;color:#2563eb;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block;margin:2px;">${t}</span>`
                   ).join("")}
                 </div>
-                <div style="text-align:center;margin-bottom:8px;">
+
+                <!-- Blog Button -->
+                <div style="text-align:center;margin-bottom:12px;">
                   <a href="${FRONTEND}/blog"
                      style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
-                    Read Latest Articles →
+                    📖 Read Latest Articles →
                   </a>
                 </div>
+
+                <!-- Projects Button -->
+                <div style="text-align:center;">
+                  <a href="${FRONTEND}/projects"
+                     style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#0ea5e9);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
+                    🚀 View My Projects →
+                  </a>
+                </div>
+
               </div>
               <div style="background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
                 <p style="margin:0 0 4px;color:#64748b;font-size:13px;font-weight:600;">Avinash Kumar</p>
