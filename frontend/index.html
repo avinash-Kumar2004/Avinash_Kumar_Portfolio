@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ═══════════════════════════════════════
+         PRIMARY META
+    ═══════════════════════════════════════ -->
+    <title>Avinash Kumar — Full Stack Developer</title>
+    <meta name="description" content="Avinash Kumar is a Full Stack Developer specializing in React, Node.js, MongoDB, and React Native. Building scalable, high-impact digital solutions at Adore Simtrak." />
+    <meta name="keywords" content="Avinash Kumar, Full Stack Developer, React Developer, Node.js, MERN Stack, PERN Stack, React Native, Web Developer, Portfolio" />
+    <meta name="author" content="Avinash Kumar" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2563eb" />
+
+    <!-- ═══════════════════════════════════════
+         OPEN GRAPH (Facebook, LinkedIn preview)
+    ═══════════════════════════════════════ -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://avinashkumar.dev/" />
+    <meta property="og:title"       content="Avinash Kumar — Full Stack Developer" />
+    <meta property="og:description" content="Building scalable, high-impact digital solutions using React, Node.js, MongoDB & React Native." />
+    <meta property="og:image"       content="/assets/og-preview.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name"   content="Avinash Kumar Portfolio" />
+    <meta property="og:locale"      content="en_IN" />
+
+    <!-- ═══════════════════════════════════════
+         TWITTER CARD
+    ═══════════════════════════════════════ -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Avinash Kumar — Full Stack Developer" />
+    <meta name="twitter:description" content="Building scalable, high-impact digital solutions using React, Node.js, MongoDB & React Native." />
+    <meta name="twitter:image"       content="/assets/og-preview.png" />
+
+    <!-- ═══════════════════════════════════════
+         FAVICON
+    ═══════════════════════════════════════ -->
+    <link rel="icon"             type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon"             type="image/png"     href="/favicon.png" sizes="32x32" />
+    <link rel="apple-touch-icon"                      href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest"                              href="/site.webmanifest" />
+
+    <!-- ═══════════════════════════════════════
+         PRECONNECT — faster Google Fonts load
+    ═══════════════════════════════════════ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- ═══════════════════════════════════════
+         STRUCTURED DATA (Google rich results)
+    ═══════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Avinash Kumar",
+      "jobTitle": "Full Stack Developer",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Adore Simtrak"
+      },
+      "url": "https://avinashkumar.dev",
+      "sameAs": [
+        "https://github.com/avinash-Kumar2004",
+        "https://www.linkedin.com/in/avinash-kumar-a226932a4"
+      ],
+      "knowsAbout": ["React", "Node.js", "MongoDB", "React Native", "Full Stack Development"]
+    }
+    </script>
+
+    <script>
+      // Apply saved theme before React loads — prevents white flash on dark mode
+      (function () {
+        try {
+          var theme = localStorage.getItem("ak-theme");
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.style.colorScheme = "dark";
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "Avinash Kumar — Full Stack Developer",
+  "short_name": "Avinash Kumar",
+  "description": "Full Stack Developer specializing in React, Node.js, and MongoDB.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0b10",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
