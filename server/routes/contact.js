@@ -1,13 +1,9 @@
-import express          from "express";
-import * as SibApiV3Sdk from "@getbrevo/brevo";
-import rateLimit        from "express-rate-limit";
+import express   from "express";
+import rateLimit from "express-rate-limit";
 import { body, validationResult } from "express-validator";
-import Contact          from "../models/Contact.js";
+import Contact   from "../models/Contact.js";
 
 const router = express.Router();
-
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-apiInstance.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -23,6 +19,28 @@ const validateContact = [
   body("subject").trim().notEmpty().withMessage("Subject is required.").isLength({ min: 3, max: 200 }).withMessage("Subject must be 3-200 chars."),
   body("message").trim().notEmpty().withMessage("Message is required.").isLength({ min: 10, max: 2000 }).withMessage("Message must be 10-2000 chars."),
 ];
+
+const sendEmail = async ({ to, subject, html, replyTo }) => {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender:      { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL },
+      to:          [{ email: to }],
+      subject,
+      htmlContent: html,
+      ...(replyTo && { replyTo: { email: replyTo } }),
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Brevo error: ${err}`);
+  }
+  return res.json();
+};
 
 router.post("/contact", contactLimiter, validateContact, async (req, res) => {
 
@@ -40,112 +58,110 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
   try {
 
     /* ══ Email 1 — TO YOU ══ */
-    const notifEmail = new SibApiV3Sdk.SendSmtpEmail();
-    notifEmail.subject     = `📩 New Contact: ${subject}`;
-    notifEmail.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
-    notifEmail.to          = [{ email: process.env.FROM_EMAIL }];
-    notifEmail.replyTo     = { email: email, name: name };
-    notifEmail.htmlContent = `
-      <!DOCTYPE html>
-      <html lang="en">
-        <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
-          <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <div style="background:linear-gradient(135deg,#2563eb,#0ea5e9);padding:24px 32px;text-align:center;">
-              <h2 style="margin:0;color:#fff;font-size:20px;font-weight:800;">📩 New Contact Message</h2>
-            </div>
-            <div style="padding:28px 32px;">
-              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-                <tr>
-                  <td style="padding:10px 14px;background:#f8fafc;border-radius:8px 8px 0 0;border:1px solid #e2e8f0;border-bottom:none;">
-                    <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">From</span><br/>
-                    <span style="font-size:15px;font-weight:700;color:#0f172a;">${name}</span>
-                    <span style="font-size:13px;color:#64748b;"> &lt;${email}&gt;</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-bottom:none;">
-                    <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Subject</span><br/>
-                    <span style="font-size:15px;font-weight:600;color:#0f172a;">${subject}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:10px 14px;background:#f8fafc;border-radius:0 0 8px 8px;border:1px solid #e2e8f0;border-top:none;">
-                    <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Received</span><br/>
-                    <span style="font-size:13px;color:#64748b;">${timestamp} IST</span>
-                  </td>
-                </tr>
-              </table>
-              <div>
-                <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin:0 0 8px;">Message</p>
-                <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-left:4px solid #2563eb;border-radius:8px;padding:16px 18px;">
-                  <p style="margin:0;font-size:15px;color:#334155;line-height:1.75;white-space:pre-wrap;">${message}</p>
+    await sendEmail({
+      to:      process.env.FROM_EMAIL,
+      subject: `📩 New Contact: ${subject}`,
+      replyTo: email,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+          <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
+            <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+              <div style="background:linear-gradient(135deg,#2563eb,#0ea5e9);padding:24px 32px;text-align:center;">
+                <h2 style="margin:0;color:#fff;font-size:20px;font-weight:800;">📩 New Contact Message</h2>
+              </div>
+              <div style="padding:28px 32px;">
+                <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                  <tr>
+                    <td style="padding:10px 14px;background:#f8fafc;border-radius:8px 8px 0 0;border:1px solid #e2e8f0;border-bottom:none;">
+                      <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">From</span><br/>
+                      <span style="font-size:15px;font-weight:700;color:#0f172a;">${name}</span>
+                      <span style="font-size:13px;color:#64748b;"> &lt;${email}&gt;</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-bottom:none;">
+                      <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Subject</span><br/>
+                      <span style="font-size:15px;font-weight:600;color:#0f172a;">${subject}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px;background:#f8fafc;border-radius:0 0 8px 8px;border:1px solid #e2e8f0;border-top:none;">
+                      <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Received</span><br/>
+                      <span style="font-size:13px;color:#64748b;">${timestamp} IST</span>
+                    </td>
+                  </tr>
+                </table>
+                <div>
+                  <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin:0 0 8px;">Message</p>
+                  <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-left:4px solid #2563eb;border-radius:8px;padding:16px 18px;">
+                    <p style="margin:0;font-size:15px;color:#334155;line-height:1.75;white-space:pre-wrap;">${message}</p>
+                  </div>
+                </div>
+                <div style="text-align:center;margin-top:24px;">
+                  <a href="mailto:${email}?subject=Re: ${subject}"
+                     style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
+                    Reply to ${name} →
+                  </a>
                 </div>
               </div>
-              <div style="text-align:center;margin-top:24px;">
-                <a href="mailto:${email}?subject=Re: ${subject}"
-                   style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
-                  Reply to ${name} →
-                </a>
+              <div style="background:#f8fafc;padding:14px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+                <p style="margin:0;color:#94a3b8;font-size:12px;">Portfolio Contact Form — avinashkumar.dev</p>
               </div>
             </div>
-            <div style="background:#f8fafc;padding:14px 32px;text-align:center;border-top:1px solid #e2e8f0;">
-              <p style="margin:0;color:#94a3b8;font-size:12px;">Portfolio Contact Form — avinashkumar.dev</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-    await apiInstance.sendTransacEmail(notifEmail);
+          </body>
+        </html>
+      `,
+    });
 
     /* ══ Email 2 — TO SENDER ══ */
-    const confirmEmail = new SibApiV3Sdk.SendSmtpEmail();
-    confirmEmail.subject     = `✅ Message received — Avinash Kumar`;
-    confirmEmail.sender      = { name: process.env.FROM_NAME, email: process.env.FROM_EMAIL };
-    confirmEmail.to          = [{ email: email }];
-    confirmEmail.htmlContent = `
-      <!DOCTYPE html>
-      <html lang="en">
-        <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
-          <div style="max-width:520px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <div style="background:linear-gradient(135deg,#2563eb,#0ea5e9);padding:28px 32px;text-align:center;">
-              <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;">Message Received! ✅</h2>
-              <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">I'll get back to you within 24 hours</p>
-            </div>
-            <div style="padding:28px 32px;">
-              <p style="margin:0 0 14px;color:#475569;font-size:15px;line-height:1.7;">
-                Hi <strong style="color:#0f172a;">${name}</strong>! 👋
-              </p>
-              <p style="margin:0 0 20px;color:#475569;font-size:15px;line-height:1.7;">
-                Thanks for reaching out! I've received your message about
-                <strong style="color:#2563eb;">"${subject}"</strong>
-                and will respond as soon as possible.
-              </p>
-              <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
-                <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Your Message</p>
-                <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">${message.length > 200 ? message.substring(0, 200) + "..." : message}</p>
+    await sendEmail({
+      to:      email,
+      subject: `✅ Message received — Avinash Kumar`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+          <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',sans-serif;">
+            <div style="max-width:520px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+              <div style="background:linear-gradient(135deg,#2563eb,#0ea5e9);padding:28px 32px;text-align:center;">
+                <h2 style="margin:0;color:#fff;font-size:22px;font-weight:800;">Message Received! ✅</h2>
+                <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">I'll get back to you within 24 hours</p>
               </div>
-              <div style="text-align:center;margin-bottom:12px;">
-                <a href="${FRONTEND}/projects"
-                   style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
-                  🚀 View My Projects →
-                </a>
+              <div style="padding:28px 32px;">
+                <p style="margin:0 0 14px;color:#475569;font-size:15px;line-height:1.7;">
+                  Hi <strong style="color:#0f172a;">${name}</strong>! 👋
+                </p>
+                <p style="margin:0 0 20px;color:#475569;font-size:15px;line-height:1.7;">
+                  Thanks for reaching out! I've received your message about
+                  <strong style="color:#2563eb;">"${subject}"</strong>
+                  and will respond as soon as possible.
+                </p>
+                <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+                  <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Your Message</p>
+                  <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">${message.length > 200 ? message.substring(0, 200) + "..." : message}</p>
+                </div>
+                <div style="text-align:center;margin-bottom:12px;">
+                  <a href="${FRONTEND}/projects"
+                     style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
+                    🚀 View My Projects →
+                  </a>
+                </div>
+                <div style="text-align:center;">
+                  <a href="${FRONTEND}/blog"
+                     style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#0ea5e9);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
+                    📖 Read My Blog →
+                  </a>
+                </div>
               </div>
-              <div style="text-align:center;">
-                <a href="${FRONTEND}/blog"
-                   style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#0ea5e9);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
-                  📖 Read My Blog →
-                </a>
+              <div style="background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+                <p style="margin:0 0 4px;color:#64748b;font-size:13px;font-weight:600;">Avinash Kumar</p>
+                <p style="margin:0;color:#94a3b8;font-size:12px;">Full Stack Developer at Adore Simtrak</p>
               </div>
             </div>
-            <div style="background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
-              <p style="margin:0 0 4px;color:#64748b;font-size:13px;font-weight:600;">Avinash Kumar</p>
-              <p style="margin:0;color:#94a3b8;font-size:12px;">Full Stack Developer at Adore Simtrak</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-    await apiInstance.sendTransacEmail(confirmEmail);
+          </body>
+        </html>
+      `,
+    });
 
     await Contact.create({ name, email, subject, message });
     return res.status(200).json({ message: "Message sent successfully!" });
