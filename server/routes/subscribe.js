@@ -52,10 +52,12 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
 
     const totalCount = await Subscriber.countDocuments();
 
+    const FRONTEND = "https://avinash-kumar-portfolio-zts1.vercel.app";
+
     /* ══ Email 1 — Notification to YOU ══ */
     await resend.emails.send({
-      from: "Avinash Kumar Portfolio <onboarding@resend.dev>",
-      to:   process.env.SMTP_USER,
+      from:    "Avinash Kumar Portfolio <onboarding@resend.dev>",
+      to:      "www.kumaravinash3898@gmail.com",
       subject: "🎉 New Blog Subscriber — Portfolio",
       html: `
         <!DOCTYPE html>
@@ -88,8 +90,8 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
 
     /* ══ Email 2 — Confirmation to SUBSCRIBER ══ */
     await resend.emails.send({
-      from: "Avinash Kumar <onboarding@resend.dev>",
-      to:   email,
+      from:    "Avinash Kumar <onboarding@resend.dev>",
+      to:      email,
       subject: "✅ You're subscribed to Avinash Kumar's Blog!",
       html: `
         <!DOCTYPE html>
@@ -119,7 +121,7 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
                   ).join("")}
                 </div>
                 <div style="text-align:center;margin-bottom:8px;">
-                  <a href="${process.env.FRONTEND_URL}/blog"
+                  <a href="${FRONTEND}/blog"
                      style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
                     Read Latest Articles →
                   </a>

@@ -11,7 +11,7 @@ import mongoose       from "mongoose";
 dotenv.config();
 
 /* ── Validate required env vars on startup ── */
-const REQUIRED_ENV = ["SMTP_HOST","SMTP_PORT","SMTP_USER","SMTP_PASS","FROM_NAME","FROM_EMAIL","MONGO_URI"];
+const REQUIRED_ENV = ["MONGO_URI", "RESEND_API_KEY", "SMTP_USER"];
 REQUIRED_ENV.forEach(key => {
   if (!process.env[key]) {
     console.error(`❌ Missing env variable: ${key}`);
@@ -31,14 +31,10 @@ const isProd = process.env.NODE_ENV === "production";
 /* ── Trust Proxy (Render ke liye zaroori) ── */
 app.set("trust proxy", 1);
 
-/* ══════════════════════════════════════
-   SECURITY MIDDLEWARE
-══════════════════════════════════════ */
-
 /* 1. Helmet */
 app.use(helmet({
-  contentSecurityPolicy:      false,
-  crossOriginEmbedderPolicy:  false,
+  contentSecurityPolicy:     false,
+  crossOriginEmbedderPolicy: false,
 }));
 
 /* 2. CORS */
@@ -60,12 +56,11 @@ app.use(cors({
     console.error("❌ CORS blocked:", origin);
     cb(new Error("Not allowed by CORS"));
   },
-  methods:      ["GET", "POST", "OPTIONS"],
+  methods:        ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
-  credentials:  false,
+  credentials:    false,
 }));
 
-/* OPTIONS preflight handle karo */
 app.options("*", cors());
 
 /* 3. Body parser */
@@ -117,5 +112,5 @@ app.use((err, _req, res, _next) => {
 app.listen(PORT, () => {
   console.log(`✅ Server: http://localhost:${PORT}`);
   console.log(`🌍 Mode:   ${process.env.NODE_ENV || "development"}`);
-  console.log(`📧 Email:  ${process.env.FROM_EMAIL}`);
+  console.log(`📧 SMTP:   ${process.env.SMTP_USER}`);
 });

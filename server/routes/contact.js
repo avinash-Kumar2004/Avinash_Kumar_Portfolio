@@ -31,6 +31,8 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
 
   const { name, email, subject, message } = req.body;
 
+  const FRONTEND = "https://avinash-kumar-portfolio-zts1.vercel.app";
+
   const timestamp = new Date().toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata", dateStyle: "full", timeStyle: "short",
   });
@@ -39,10 +41,10 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
 
     /* ══ Email 1 — TO YOU ══ */
     await resend.emails.send({
-      from:     "Avinash Kumar Portfolio <onboarding@resend.dev>",
-      to:       process.env.SMTP_USER,
-      replyTo:  email,
-      subject:  `📩 New Contact: ${subject}`,
+      from:    "Avinash Kumar Portfolio <onboarding@resend.dev>",
+      to:      "www.kumaravinash3898@gmail.com",
+      replyTo: email,
+      subject: `📩 New Contact: ${subject}`,
       html: `
         <!DOCTYPE html>
         <html lang="en">
@@ -123,7 +125,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
                   <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">${message.length > 200 ? message.substring(0, 200) + "..." : message}</p>
                 </div>
                 <div style="text-align:center;">
-                  <a href="${process.env.FRONTEND_URL}/projects"
+                  <a href="${FRONTEND}/projects"
                      style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
                     View My Projects →
                   </a>
