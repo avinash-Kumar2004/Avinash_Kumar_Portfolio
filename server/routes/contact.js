@@ -1,13 +1,12 @@
-// server/routes/contact.js — Production Ready ✅
-import express    from "express";
-import nodemailer from "nodemailer";
-import rateLimit  from "express-rate-limit";
+import express   from "express";
+import { Resend } from "resend";
+import rateLimit from "express-rate-limit";
 import { body, validationResult } from "express-validator";
-import Contact    from "../models/Contact.js";
+import Contact   from "../models/Contact.js";
 
 const router = express.Router();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-/* ── Rate limit: 5 messages per hour per IP ── */
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
@@ -16,7 +15,6 @@ const contactLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/* ── Validation rules ── */
 const validateContact = [
   body("name").trim().notEmpty().withMessage("Name is required.").isLength({ min: 2, max: 100 }).withMessage("Name must be 2-100 chars."),
   body("email").trim().isEmail().withMessage("Valid email required.").normalizeEmail(),
@@ -24,28 +22,6 @@ const validateContact = [
   body("message").trim().notEmpty().withMessage("Message is required.").isLength({ min: 10, max: 2000 }).withMessage("Message must be 10-2000 chars."),
 ];
 
-/* ── Reuse transporter ── */
-let transporter = null;
-const getTransporter = () => {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host:   process.env.SMTP_HOST,
-      port:   Number(process.env.SMTP_PORT),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      pool: true,
-      tls: { rejectUnauthorized: true },
-    });
-  }
-  return transporter;
-};
-
-/* ══════════════════════════════════════════
-   POST /api/contact
-══════════════════════════════════════════ */
 router.post("/contact", contactLimiter, validateContact, async (req, res) => {
 
   const errors = validationResult(req);
@@ -60,15 +36,13 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
   });
 
   try {
-    const mailer = getTransporter();
-    await mailer.verify();
 
-    /* ══ Email 1 — TO YOU (notification) ══ */
-    await mailer.sendMail({
-      from:    `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
-      to:      process.env.SMTP_USER,
-      replyTo: email,
-      subject: `📩 New Contact: ${subject}`,
+    /* ══ Email 1 — TO YOU ══ */
+    await resend.emails.send({
+      from:     "Avinash Kumar Portfolio <onboarding@resend.dev>",
+      to:       process.env.SMTP_USER,
+      replyTo:  email,
+      subject:  `📩 New Contact: ${subject}`,
       html: `
         <!DOCTYPE html>
         <html lang="en">
@@ -121,9 +95,9 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
       `,
     });
 
-    /* ══ Email 2 — TO SENDER (confirmation) ══ */
-    await mailer.sendMail({
-      from:    `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
+    /* ══ Email 2 — TO SENDER ══ */
+    await resend.emails.send({
+      from:    "Avinash Kumar <onboarding@resend.dev>",
       to:      email,
       subject: `✅ Message received — Avinash Kumar`,
       html: `
@@ -149,7 +123,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
                   <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">${message.length > 200 ? message.substring(0, 200) + "..." : message}</p>
                 </div>
                 <div style="text-align:center;">
-                  <a href="${process.env.FRONTEND_URL || "https://avinash-kumar-portfolio-zts1.vercel.app/blog"}/projects"
+                  <a href="${process.env.FRONTEND_URL}/projects"
                      style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">
                     View My Projects →
                   </a>
@@ -165,9 +139,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
       `,
     });
 
-    /* ── Save to MongoDB ── */
     await Contact.create({ name, email, subject, message });
-
     return res.status(200).json({ message: "Message sent successfully!" });
 
   } catch (error) {
