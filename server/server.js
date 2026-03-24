@@ -7,13 +7,13 @@ import rateLimit      from "express-rate-limit";
 import subscribeRoute from "./routes/subscribe.js";
 import contactRoute   from "./routes/contact.js";
 import mongoose       from "mongoose";
-
+import { startKeepAlive } from "./utils/Keepalive.js";
 dotenv.config();
 
 /* ── Validate required env vars on startup ── */
 const REQUIRED_ENV = [
   "MONGO_URI",
-  "RESEND_API_KEY",   // ✅ SMTP ki jagah Resend
+  "RESEND_API_KEY",
   "FROM_EMAIL",
   "FROM_NAME",
   "FRONTEND_URL",
@@ -91,7 +91,7 @@ app.disable("x-powered-by");
 app.use("/api", subscribeRoute);
 app.use("/api", contactRoute);
 
-/* Health check */
+/* Health check — keep-alive bhi isi ko ping karta hai */
 app.get("/health", (_req, res) => {
   res.status(200).json({
     status:    "ok",
@@ -119,4 +119,7 @@ app.listen(PORT, () => {
   console.log(`✅ Server: http://localhost:${PORT}`);
   console.log(`🌍 Mode:   ${process.env.NODE_ENV || "development"}`);
   console.log(`📧 From:   ${process.env.FROM_EMAIL}`);
+
+  // ✅ Keep-alive start karo — Render ko sleep mat karne do
+  startKeepAlive();
 });
