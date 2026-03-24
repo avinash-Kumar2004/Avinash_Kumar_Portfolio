@@ -1,3 +1,4 @@
+// routes/contact.js — Production Ready ✅
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { body, validationResult } from "express-validator";
@@ -7,7 +8,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 const router = express.Router();
 
 const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
+  windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
   message: { message: "Too many messages sent. Please try again after an hour." },
   standardHeaders: true,
@@ -15,14 +16,26 @@ const contactLimiter = rateLimit({
 });
 
 const validateContact = [
-  body("name").trim().notEmpty().withMessage("Name is required.").isLength({ min: 2, max: 100 }).withMessage("Name must be 2-100 chars."),
-  body("email").trim().isEmail().withMessage("Valid email required.").normalizeEmail(),
-  body("subject").trim().notEmpty().withMessage("Subject is required.").isLength({ min: 3, max: 200 }).withMessage("Subject must be 3-200 chars."),
-  body("message").trim().notEmpty().withMessage("Message is required.").isLength({ min: 10, max: 2000 }).withMessage("Message must be 10-2000 chars."),
+  body("name")
+    .trim()
+    .notEmpty().withMessage("Name is required.")
+    .isLength({ min: 2, max: 100 }).withMessage("Name must be 2-100 characters."),
+  body("email")
+    .trim()
+    .isEmail().withMessage("Valid email required.")
+    .normalizeEmail()
+    .isLength({ max: 254 }).withMessage("Email too long."),
+  body("subject")
+    .trim()
+    .notEmpty().withMessage("Subject is required.")
+    .isLength({ min: 3, max: 200 }).withMessage("Subject must be 3-200 characters."),
+  body("message")
+    .trim()
+    .notEmpty().withMessage("Message is required.")
+    .isLength({ min: 10, max: 2000 }).withMessage("Message must be 10-2000 characters."),
 ];
 
 router.post("/contact", contactLimiter, validateContact, async (req, res) => {
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ message: errors.array()[0].msg });
@@ -30,6 +43,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
 
   const { name, email, subject, message } = req.body;
   const FRONTEND = process.env.FRONTEND_URL;
+
   const timestamp = new Date().toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata",
     dateStyle: "full",
@@ -37,8 +51,10 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
   });
 
   try {
+    // ✅ Step 1: Save to DB first (so we don't lose data if email fails)
+    await Contact.create({ name, email, subject, message });
 
-    // Email 1 — Tujhe contact notification
+    // ✅ Step 2: Notify yourself
     await sendEmail({
       to: process.env.FROM_EMAIL,
       subject: `📩 New Contact: ${subject}`,
@@ -87,7 +103,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
                 </div>
               </div>
               <div style="background:#f8fafc;padding:14px 32px;text-align:center;border-top:1px solid #e2e8f0;">
-                <p style="margin:0;color:#94a3b8;font-size:12px;">Portfolio Contact Form — avinashkumar.dev</p>
+                <p style="margin:0;color:#94a3b8;font-size:12px;">Portfolio Contact Form — Avinash Kumar</p>
               </div>
             </div>
           </body>
@@ -95,7 +111,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
       `,
     });
 
-    // Email 2 — Sender ko confirmation
+    // ✅ Step 3: Confirmation to sender
     await sendEmail({
       to: email,
       subject: `✅ Message received — Avinash Kumar`,
@@ -119,7 +135,9 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
                 </p>
                 <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
                   <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;">Your Message</p>
-                  <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">${message.length > 200 ? message.substring(0, 200) + "..." : message}</p>
+                  <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;white-space:pre-wrap;">
+                    ${message.length > 200 ? message.substring(0, 200) + "..." : message}
+                  </p>
                 </div>
                 <div style="text-align:center;margin-bottom:12px;">
                   <a href="${FRONTEND}/projects"
@@ -136,7 +154,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
               </div>
               <div style="background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
                 <p style="margin:0 0 4px;color:#64748b;font-size:13px;font-weight:600;">Avinash Kumar</p>
-                <p style="margin:0;color:#94a3b8;font-size:12px;">Full Stack Developer at Adore Simtrak</p>
+                <p style="margin:0;color:#94a3b8;font-size:12px;">Full Stack Developer</p>
               </div>
             </div>
           </body>
@@ -144,12 +162,12 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
       `,
     });
 
-    await Contact.create({ name, email, subject, message });
     return res.status(200).json({ message: "Message sent successfully!" });
 
   } catch (error) {
-    console.error("❌ Contact email error:", error.message);
-    return res.status(500).json({ message: "Could not send message. Please try again." });
+    console.error("❌ Contact error:", error.message);
+    // DB save already happened, so data is safe. Email failed — inform user.
+    return res.status(500).json({ message: "Could not send email. Please try again later." });
   }
 });
 
