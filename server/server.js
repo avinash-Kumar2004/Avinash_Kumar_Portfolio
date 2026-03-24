@@ -11,10 +11,16 @@ import mongoose       from "mongoose";
 dotenv.config();
 
 /* ── Validate required env vars on startup ── */
-const REQUIRED_ENV = ["MONGO_URI", "SMTP_USER", "SMTP_PASS", "FROM_EMAIL", "FROM_NAME", "FRONTEND_URL"];
-REQUIRED_ENV.forEach(key => { 
+const REQUIRED_ENV = [
+  "MONGO_URI",
+  "RESEND_API_KEY",   // ✅ SMTP ki jagah Resend
+  "FROM_EMAIL",
+  "FROM_NAME",
+  "FRONTEND_URL",
+];
+REQUIRED_ENV.forEach(key => {
   if (!process.env[key]) {
-    console.error(`Missing env variable: ${key}`);
+    console.error(`❌ Missing env variable: ${key}`);
     process.exit(1);
   }
 });
