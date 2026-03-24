@@ -56,7 +56,7 @@ router.post("/subscribe", subscribeLimiter, validateSubscribe, async (req, res) 
     // ✅ Sirf apne aap ko notify karo (onboarding@resend.dev only works for your own email)
     try {
       await sendEmail({
-        to: "kumaravinash3898@gmail.com",
+        to: "www.kumaravinash3898@gmail.com",
         subject: `🎉 New Blog Subscriber — Portfolio`,
         html: `
           <!DOCTYPE html>

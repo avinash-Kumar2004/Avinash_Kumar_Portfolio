@@ -60,7 +60,7 @@ router.post("/contact", contactLimiter, validateContact, async (req, res) => {
     // ✅ Step 2: Notify yourself (only your own email works with onboarding@resend.dev)
     try {
       await sendEmail({
-        to: "kumaravinash3898@gmail.com",
+        to: "www.kumaravinash3898@gmail.com",
         subject: `📩 New Contact: ${subject}`,
         replyTo: email,
         html: `
