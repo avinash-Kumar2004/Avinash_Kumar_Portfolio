@@ -182,9 +182,9 @@ const PROJECTS = [
     date: "March 2026",
     short:
       "This portfolio — built with React, Tailwind CSS, featuring dark mode, animations, and routing.",
-    image: "/projects/project-5.jpg",
+    image: "/projects/project-6.jpg",
     github: "https://github.com/avinash-Kumar2004",
-    live: "https://your-live-link.com",
+    live: "https://avinash-kumar-portfolio-zts1.vercel.app/",
     tags: ["React", "Tailwind CSS", "Vite"],
     accent: "#f59e0b",
     detail: {
