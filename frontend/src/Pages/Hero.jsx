@@ -297,7 +297,7 @@ export default function Hero() {
                 <img
                   src="/assets/profile1.png"
                   alt="Avinash Kumar"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover",objectPosition:"top"}}
                   onError={e => {
                     e.target.style.display = "none";
                     e.target.nextSibling.style.display = "flex";
