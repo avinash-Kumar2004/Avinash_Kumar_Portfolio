@@ -175,32 +175,44 @@ const PROJECTS = [
       ],
     },
   },
-  {
-    id: 6,
-    title: "Portfolio Website",
-    category: "Full-Stack",
-    date: "March 2026",
-    short:
-      "This portfolio — built with React, Tailwind CSS, featuring dark mode, animations, and routing.",
-    image: "/projects/project-6.png",
-    github: "https://github.com/avinash-Kumar2004",
-    live: "https://avinash-kumar-portfolio-zts1.vercel.app/",
-    tags: ["React", "Tailwind CSS", "Vite"],
-    accent: "#f59e0b",
-    detail: {
-      overview:
-        "A fully responsive personal portfolio website built from scratch using React and Tailwind CSS. Features dark/light mode, smooth scroll animations, React Router navigation, and a clean, modern design.",
-      features: [
-        "Dark/Light mode with localStorage persistence",
-        "Scroll-triggered animations using IntersectionObserver",
-        "React Router for single-page navigation",
-        "Fully responsive across all screen sizes",
-        "Production-optimized with Vite",
-        "SEO-friendly meta tags and Open Graph",
-      ],
-      tech: ["React", "Tailwind CSS", "Vite", "React Router", "JavaScript"],
-    },
+ {
+  id: 6,
+  title: "Ak_SongWave",
+  category: "Full-Stack",
+  date: "March 2026",
+  short:
+    "A full-stack music platform built with React & Tailwind where users can upload songs, like/dislike, and manage accounts with authentication.",
+  image: "/projects/project-6.png",
+  github: "https://github.com/avinash-Kumar2004/ak_Song",
+  live: "https://aksong-ivxz7mobx-avinash-kumars-projects-128ee7ac.vercel.app/",
+  tags: ["React", "Tailwind CSS", "Vite", "Full-Stack", "Auth"],
+  accent: "#f59e0b",
+
+  detail: {
+    overview:
+      "Ak_SongWave is a fully responsive full-stack music web application built using React and Tailwind CSS. It allows users to upload songs, explore categories like Bollywood, Hindi, and Haryanvi, and interact with content through likes and dislikes. The platform includes secure authentication with signup, login, and password management, along with SEO optimization for better visibility.",
+
+    features: [
+      "User authentication (Signup, Login, Change Password)",
+      "Upload and manage songs",
+      "Like and Dislike system",
+      "Multiple categories (Bollywood, Hindi, Haryanvi)",
+      "SEO optimization for better ranking",
+      "Fully responsive design across devices",
+      "Modern UI with Tailwind CSS",
+      "Fast performance with Vite",
+    ],
+
+    tech: [
+      "React",
+      "Tailwind CSS",
+      "Vite",
+      "JavaScript",
+      "React Router",
+      "Authentication System"
+    ],
   },
+}
 ];
 
 const FILTERS = ["All Projects", "Full-Stack", "Mobile App"];
