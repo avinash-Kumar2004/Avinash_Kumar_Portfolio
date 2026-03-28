@@ -58,7 +58,7 @@ const experiences = [
 {
   id: 2,
   title: "Project Lead (Intern)",
-  company: "Adore Simtrak",
+  company: "Simtrak Solution",
   location: "Remote",
   period: "2026",
   category: "Leadership",
