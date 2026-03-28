@@ -31,6 +31,7 @@ const experiences = [
 },
   {
     id:3,
+      title: "Web Developer Intern",
     company: "Zidio Development",
     location: "Remote",
     period: "June 2025 - August 2025",
