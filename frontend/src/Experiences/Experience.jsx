@@ -6,7 +6,7 @@ const experiences = [
   {
   id: 1,
   title: "Full Stack Web Developer Intern",
-  company: "Adore Simtrak",
+  company: "Simtrak Solution ",
   location: "Uttar Pradesh, India (Remote)",
   period: "February 2026 – Present",
   category: "Full Stack",
@@ -26,6 +26,32 @@ const experiences = [
       name: "Full Stack Web Applications",
       desc: "Worked on real-world web applications, handling both frontend and backend development, including API integration, authentication, and performance optimization.",
       tags: ["React.js", "Node.js", "MongoDB", "Express.js", "JWT Auth", "REST API"],
+    },
+  ],
+},
+{
+  id: 2,
+  title: "Project Lead (Intern)",
+  company: "Simtrak Solution",
+  location: "Remote",
+  period: "2026",
+  category: "Leadership",
+  badge: "Leadership",
+  badgeColor: "bg-orange-500 text-white",
+
+  responsibilities: [
+    "Led a small development team to successfully deliver a web-based project within deadlines",
+    "Coordinated task distribution, progress tracking, and team communication",
+    "Collaborated with developers to resolve technical challenges and ensure smooth workflow",
+    "Monitored project requirements and ensured proper implementation of features",
+    "Maintained documentation and reported progress updates to mentors",
+  ],
+
+  projects: [
+    {
+      name: "Team-Based Web Project",
+      desc: "Managed and contributed to a collaborative web development project, focusing on task management, teamwork, and timely delivery.",
+      tags: ["Team Leadership", "Project Management", "Collaboration", "Agile Basics"],
     },
   ],
 },
@@ -55,32 +81,7 @@ const experiences = [
       },
     ],
 },
-{
-  id: 2,
-  title: "Project Lead (Intern)",
-  company: "Simtrak Solution",
-  location: "Remote",
-  period: "2026",
-  category: "Leadership",
-  badge: "Leadership",
-  badgeColor: "bg-orange-500 text-white",
 
-  responsibilities: [
-    "Led a small development team to successfully deliver a web-based project within deadlines",
-    "Coordinated task distribution, progress tracking, and team communication",
-    "Collaborated with developers to resolve technical challenges and ensure smooth workflow",
-    "Monitored project requirements and ensured proper implementation of features",
-    "Maintained documentation and reported progress updates to mentors",
-  ],
-
-  projects: [
-    {
-      name: "Team-Based Web Project",
-      desc: "Managed and contributed to a collaborative web development project, focusing on task management, teamwork, and timely delivery.",
-      tags: ["Team Leadership", "Project Management", "Collaboration", "Agile Basics"],
-    },
-  ],
-},
 {
   id: 4,
   title: "Full Stack Development Learner",
